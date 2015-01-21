@@ -228,7 +228,7 @@
         socket.on('connected', function(data) {
             player_id = data['player_id']
             console.log('Player ID:' + player_id);
-            socket.emit('game-connect',{'player_id':player_id,'game_id':{{ game_id }}});
+            socket.emit('game_connect',{'player_id':player_id,'game_id':{{ game_id }}});
         });
 
         socket.on('player_number', function(data) {
@@ -243,7 +243,7 @@
 
         socket.on('game_start', function(data) {
             console.log('received game start signal from server');
-            socket.emit('get-game-state', {'player_id':player_id, 'game_id':{{game_id}}});
+            socket.emit('get_game_state', {'player_id':player_id, 'game_id':{{game_id}}});
         });
 
         socket.on('render_state', function(data) {

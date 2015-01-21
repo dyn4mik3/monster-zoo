@@ -141,7 +141,7 @@ MAX_PLAYERS_IN_GAMEROOM = 2
 
 live_games = {}
 
-@socketio.on('game-connect', namespace='/game')
+@socketio.on('game_connect', namespace='/game')
 def game_connect(data):
     """
     User is on game page at this point. Add them to the socketio room. Add them as a player to the Game.
@@ -172,7 +172,7 @@ def game_connect(data):
             game.start()
             emit('game_start', {'game_id': game.game_id}, room=game_id)
 
-@socketio.on('get-game-state', namespace='/game')
+@socketio.on('get_game_state', namespace='/game')
 def send_game_state(data):
     """
     Start game and send render signal with data
