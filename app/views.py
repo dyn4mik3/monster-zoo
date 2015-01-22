@@ -188,8 +188,3 @@ def send_game_state(data):
     except:
         print 'Not a live game.'
         #emit('redirect', {'url': url_for('lobby')}, room=player_id)
-
-
-
-
-
