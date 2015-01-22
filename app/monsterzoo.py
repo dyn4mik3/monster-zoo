@@ -34,6 +34,9 @@ class Deck(object):
     def shuffle(self):
         random.shuffle(self.cards)
 
+    def is_empty(self):
+        return len(self.cards) == 0
+
     def __str__(self):
         # print statements will return json representation of variables
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
