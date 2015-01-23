@@ -4,13 +4,51 @@ import uuid
 
 
 class MonsterZooGame(object):
-    def __init__(self, max_player_count=2, game_id=None):
-        if game_id:
-            self.game_id = game_id
-        else:
-            self.game_id = uuid.uuid4()
+    def __init__(self, max_player_count=2):
         self.player_list = []
         self.max_player_count = max_player_count
+        self.wild = Wild()
+        self.current_player = None
+
+    def add_player(self, player):
+        if len(self.player_list) < self.max_player_count:
+            self.player_list.append(player)
+        else:
+            print 'Already max players'
+
+    def is_ready(self):
+        if len(self.player_list) == self.max_player_count:
+            return True
+        else:
+            return False
+
+    def next_player(self):
+        if self.current_player:
+            # if the current player is the last one in the list, start from beginning
+            if self.current_player == self.player_list[-1]:
+                return self.player_list[0]
+            else:
+                player_index = self.player_list.index(self.current_player)
+                return self.player_list[player_index+1]
+        else:
+            return self.player_list[0]
+
+    def setup_game(self):
+        """
+        Deal 5 cards to every player. Deal 5 cards in the Wild.
+        Setup the active player.
+        """
+        if self.is_ready():
+            for player in self.player_list:
+                player.draw(5)
+            self.wild.draw(5)
+            self.current_player = self.next_player()
+        else:
+            print 'Not enough players to setup game'
+
+    def __str__(self):
+        # print statements will return json representation of variables
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 
 """
@@ -71,13 +109,6 @@ class Deck(object):
 
     def is_card_in_deck(self, card):
         if card in self.cards:
-            return True
-        else:
-            return False
-
-    def play_card(self, player, card):
-        if card in self.cards:
-            card.play(player)
             return True
         else:
             return False
@@ -191,4 +222,19 @@ class Player(object):
         self.food = 0
 
     def play_from_hand(self, card):
-        self.hand.play_card(self, card)
+        if card in self.hand.cards:
+            card.play(self)
+        else:
+            print "Card not in hand"
+
+    def draw(self, num_of_cards=1):
+        cards = self.deck.draw(num_of_cards)
+        for card in cards:
+            self.hand.cards.append(card)
+
+
+class Wild(Player):
+    def __init__(self):
+        self.deck = WildDeck()
+        self.hand = Hand()
+        self.discard = Discard()

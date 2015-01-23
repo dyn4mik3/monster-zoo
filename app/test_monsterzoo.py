@@ -21,18 +21,32 @@ class MonsterZooTestCase(unittest.TestCase):
         deck = player.deck
         assert deck.is_card_in_deck(card)
 
-    def test_play_card_from_deck(self):
-        player = Player()
-        card = player.deck.cards[0]
-        player.deck.play_card(player, card)
-        assert player.food > 0
-
-    def test_play_card(self):
+    def test_play_card_from_hand(self):
         player = Player()
         card = OneOogly()
         player.hand.add_card(card)
         player.play_from_hand(card)
         assert player.food > 0
+
+    def test_player_hand_game_setup(self):
+        game = MonsterZooGame()
+        player = Player()
+        player2 = Player()
+        game.add_player(player)
+        game.add_player(player2)
+        game.setup_game()
+        print game
+        assert len(player.hand.cards) == 5
+
+    def test_wild_hand_game_setup(self):
+        game = MonsterZooGame()
+        player = Player()
+        player2 = Player()
+        wild = game.wild
+        game.add_player(player)
+        game.add_player(player2)
+        game.setup_game()
+        assert len(wild.hand.cards) == 5
 
 if __name__ == '__main__':
     unittest.main()
