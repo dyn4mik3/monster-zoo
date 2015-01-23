@@ -1,8 +1,22 @@
 import random
 import json
+import uuid
+
 
 class MonsterZooGame(object):
-    pass
+    def __init__(self, max_player_count=2, game_id=None):
+        if game_id:
+            self.game_id = game_id
+        else:
+            self.game_id = uuid.uuid4()
+        self.player_list = []
+        self.max_player_count = max_player_count
+
+
+"""
+General Classes
+"""
+
 
 class Card(object):
     def __init__(self, name="", description="", category="", family="", cost=0, food=0, image="/static/images/Oogly.png"):
@@ -18,18 +32,55 @@ class Card(object):
         # print statements will return json representation of variables
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+
 class Deck(object):
     def __init__(self):
         self.cards = []
+        self.discard = []
 
-    def add(self, card):
-        self.cards.append(card)
+    def populate_deck(self, data):
+        """
+        :param data: List of tuples (count, card function name)
+        :return: deck object
+        """
+        for count, card in data:
+            self.cards += [card() for x in range(count)]
+
+    def add_card(self, card):
+        try:
+            self.cards.append(card)
+            return True
+        except NameError:
+            return False
 
     def draw(self, num=1):
-        return [self.pop_first_card() for x in range(num)]
+        return [self.cards.pop(0) for x in range(num)]
 
-    def pop_first_card(self):
-        return self.cards.pop(0)
+    def pop_card(self, card):
+        """
+        Removes and returns a specific card from the deck
+        :param card: Card object that exists in the deck
+        :return: Card object after removing the card from the deck
+        """
+        # get index for card, then pop it
+        try:
+            location = self.cards.index(card)
+            return self.cards.pop(location)
+        except ValueError:
+            return False
+
+    def is_card_in_deck(self, card):
+        if card in self.cards:
+            return True
+        else:
+            return False
+
+    def play_card(self, player, card):
+        if card in self.cards:
+            card.play(player)
+            return True
+        else:
+            return False
 
     def shuffle(self):
         random.shuffle(self.cards)
@@ -37,16 +88,107 @@ class Deck(object):
     def is_empty(self):
         return len(self.cards) == 0
 
+    def move_card(self, hand, card):
+        hand.add_card(self.pop_card(card))
+
     def __str__(self):
         # print statements will return json representation of variables
         return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
+
 class Hand(Deck):
-    pass
+    def __init__(self):
+        self.cards = []
+
 
 class Discard(Deck):
-    pass
+    def __init__(self):
+        self.cards = []
+
 
 class Zoo(Deck):
-    pass
+    def __init__(self):
+        self.cards = []
 
+
+
+"""
+Card Data
+"""
+
+
+class OneOogly(Card):
+    def __init__(self):
+        self.name = "One Oogly"
+        self.description = "1 Food"
+        self.category = "Monster"
+        self.family = "Oogly"
+        self.cost = 2
+        self.food = 1
+        self.image = "/static/images/Oogly.png"
+
+    def play(self, player):
+        player.food += self.food
+        print "Played One Oogly"
+
+
+class TwoOogly(Card):
+    def __init__(self):
+        self.name = "Two Oogly"
+        self.description = "2 Food"
+        self.category = "Monster"
+        self.family = "Oogly"
+        self.cost = 3
+        self.food = 2
+        self.image = "/static/images/Oogly.png"
+
+    def play(self, player):
+        player.food += self.food
+        print "Played Two Oogly"
+
+
+"""
+Deck Data
+"""
+
+WILD_DECK_CARDS = [
+    (10, OneOogly),
+    (20, TwoOogly)
+]
+
+STARTER_DECK_CARDS = [
+    (10, OneOogly)
+]
+
+
+class StarterDeck(Deck):
+    def __init__(self):
+        self.cards = []
+        self.populate_deck(STARTER_DECK_CARDS)
+
+
+class WildDeck(Deck):
+    def __init__(self):
+        self.cards = []
+        self.populate_deck(WILD_DECK_CARDS)
+
+"""
+Player Data
+"""
+
+
+class Player(object):
+    def __init__(self, player_id=None):
+        if player_id:
+            self.player_id = player_id
+        else:
+            self.player_id = uuid.uuid4()
+        self.deck = StarterDeck()
+        self.zoo = Zoo()
+        self.hand = Hand()
+        self.discard = Discard()
+        self.score = 0
+        self.food = 0
+
+    def play_from_hand(self, card):
+        self.hand.play_card(self, card)
