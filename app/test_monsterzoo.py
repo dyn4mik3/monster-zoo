@@ -35,7 +35,6 @@ class MonsterZooTestCase(unittest.TestCase):
         game.add_player(player)
         game.add_player(player2)
         game.setup_game()
-        print game
         assert len(player.hand.cards) == 5
 
     def test_wild_hand_game_setup(self):

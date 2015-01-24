@@ -220,6 +220,7 @@ class Player(object):
         self.discard = Discard()
         self.score = 0
         self.food = 0
+        self.food_discount = 0
 
     def play_from_hand(self, card):
         if card in self.hand.cards:
