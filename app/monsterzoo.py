@@ -33,6 +33,13 @@ class MonsterZooGame(object):
         else:
             return self.player_list[0]
 
+    def next_turn(self):
+        """
+        Setup for next turn. Clean up current player. Set next player.
+        """
+        self.current_player.clean_up()
+        self.current_player = self.next_player()
+
     def setup_game(self):
         """
         Deal 5 cards to every player. Deal 5 cards in the Wild.
@@ -78,6 +85,7 @@ class Deck(object):
 
     def populate_deck(self, data):
         """
+        Helper function to populate cards in deck. Takes in a list of cards.
         :param data: List of tuples (count, card function name)
         :return: deck object
         """
@@ -85,6 +93,11 @@ class Deck(object):
             self.cards += [card() for x in range(count)]
 
     def add_card(self, card):
+        """
+        Adds a card to the deck.
+        :param card: Card object
+        :return: True if successful. False on NameError.
+        """
         try:
             self.cards.append(card)
             return True
@@ -92,6 +105,11 @@ class Deck(object):
             return False
 
     def draw(self, num=1):
+        """
+        Remove num of cards from deck. Return what was removed.
+        :param num: Defaults to 1
+        :return: Cards removed from top of deck.
+        """
         return [self.cards.pop(0) for x in range(num)]
 
     def pop_card(self, card):
@@ -107,20 +125,21 @@ class Deck(object):
         except ValueError:
             return False
 
-    def is_card_in_deck(self, card):
-        if card in self.cards:
-            return True
-        else:
-            return False
-
     def shuffle(self):
         random.shuffle(self.cards)
 
     def is_empty(self):
         return len(self.cards) == 0
 
-    def move_card(self, hand, card):
-        hand.add_card(self.pop_card(card))
+    def move_card(self, deck, card):
+        deck.add_card(self.pop_card(card))
+
+    def clean_up(self):
+        """
+        Move discard to bottom of deck. Clear out discard.
+        """
+        self.cards += self.discard
+        self.discard = []
 
     def __str__(self):
         # print statements will return json representation of variables
@@ -195,12 +214,14 @@ STARTER_DECK_CARDS = [
 class StarterDeck(Deck):
     def __init__(self):
         self.cards = []
+        self.discard = []
         self.populate_deck(STARTER_DECK_CARDS)
 
 
 class WildDeck(Deck):
     def __init__(self):
         self.cards = []
+        self.discard = []
         self.populate_deck(WILD_DECK_CARDS)
 
 """
@@ -232,6 +253,21 @@ class Player(object):
         cards = self.deck.draw(num_of_cards)
         for card in cards:
             self.hand.cards.append(card)
+
+    def discard(self, card):
+        if card in self.hand.cards:
+            self.hand.move_card(self.discard, card)
+            print self.discard
+        else:
+            print 'Card not in hand'
+
+    def clean_up(self):
+        """
+        Clean up steps for end of turn. Discard goes to bottom of deck. Food is zeroed out.
+        :return:
+        """
+        self.food = 0
+        self.deck.clean_up()
 
 
 class Wild(Player):

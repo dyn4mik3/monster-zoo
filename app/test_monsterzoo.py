@@ -15,12 +15,6 @@ class MonsterZooTestCase(unittest.TestCase):
         deck.add_card(card)
         assert len(deck.cards) == 1
 
-    def test_card_in_deck(self):
-        player = Player()
-        card = player.deck.cards[0]
-        deck = player.deck
-        assert deck.is_card_in_deck(card)
-
     def test_play_card_from_hand(self):
         player = Player()
         card = OneOogly()
@@ -29,7 +23,7 @@ class MonsterZooTestCase(unittest.TestCase):
         assert player.food > 0
 
     def test_player_hand_game_setup(self):
-        game = MonsterZooGame()
+        game = MonsterZooGame(2)
         player = Player()
         player2 = Player()
         game.add_player(player)
@@ -38,7 +32,7 @@ class MonsterZooTestCase(unittest.TestCase):
         assert len(player.hand.cards) == 5
 
     def test_wild_hand_game_setup(self):
-        game = MonsterZooGame()
+        game = MonsterZooGame(2)
         player = Player()
         player2 = Player()
         wild = game.wild
@@ -46,6 +40,50 @@ class MonsterZooTestCase(unittest.TestCase):
         game.add_player(player2)
         game.setup_game()
         assert len(wild.hand.cards) == 5
+
+    def test_next_player_start(self):
+        game = MonsterZooGame(2)
+        player1 = Player()
+        player2 = Player()
+        game.add_player(player1)
+        game.add_player(player2)
+        game.setup_game()
+        assert game.current_player == player1
+
+    def test_next_player_start(self):
+        game = MonsterZooGame(2)
+        player1 = Player()
+        player2 = Player()
+        game.add_player(player1)
+        game.add_player(player2)
+        game.setup_game()
+        assert game.next_player() == player2
+
+    def test_next_turn(self):
+        game = MonsterZooGame(2)
+        player1 = Player()
+        player2 = Player()
+        game.add_player(player1)
+        game.add_player(player2)
+        game.setup_game()
+        game.next_turn()
+        assert game.current_player == player2
+
+    def test_next_turn_twice(self):
+        game = MonsterZooGame(2)
+        player1 = Player()
+        player2 = Player()
+        game.add_player(player1)
+        game.add_player(player2)
+        game.setup_game()
+        game.next_turn()
+        game.next_turn()
+        assert game.current_player == player1
+
+    def test_player_discard_card(self):
+        player1 = Player()
+        player1.draw(5)
+        print player1.hand
 
 if __name__ == '__main__':
     unittest.main()
