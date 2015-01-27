@@ -146,26 +146,26 @@ def game_connect(data):
     """
     User is on game page at this point. Add them to the socketio room. Add them as a player to the Game.
     """
-    game_id = data['game_id']  # taken from the game page
+    gameroom_id = data['gameroom_id']  # taken from the game page
     player_id = session['player_id']  # player_id is already stored in the socketio session on connect
 
     # Check to see if game room is valid
-    if check_for_live_gameroom(game_id):
+    if check_for_live_gameroom(gameroom_id):
         # Check to see if game has been created. If not, create game.
-        if game_id in live_games:
-            game = live_games[game_id]
-            print 'Existing game already found. Game set to %s' % game_id
+        if gameroom_id in live_games:
+            game = live_games[gameroom_id]
+            print 'Existing game already found. Game set to %s' % gameroom_id
         else:
             game = MonsterZooGame()
-            live_games[game_id] = game
-            print 'No Game Found. New Game created for Gameroom %s' % (game_id)
+            live_games[gameroom_id] = game
+            print 'No Game Found. New Game created for Gameroom %s' % (gameroom_id)
 
         # Try to add player to game room.
         player = Player(player_id)
         print "Used player_id %s to make Player object. Player.player_id = %s" % (player_id, player.player_id)
         if game.add_player(player):
-            join_room(game_id)
-            emit('alert', 'Player %s has been added to game %s' % (player.player_id, game_id), room=game_id)
+            join_room(gameroom_id)
+            emit('alert', 'Player %s has been added to game %s' % (player.player_id, gameroom_id), room=gameroom_id)
         else:
             print 'Player %s can not be added to game. Redirecting to lobby.' % player_id
             emit('redirect', {'url': url_for('lobby')}, room=player_id)
@@ -175,7 +175,7 @@ def game_connect(data):
             print 'Game is ready. Setting up game.'
             print 'Live games: %s' % live_games
             game.setup_game()
-            emit('game_start', {'game_id': game_id}, room=game_id)
+            emit('game_start', {'gameroom_id': gameroom_id}, room=gameroom_id)
             for p in game.players:
                 print 'Player %s is at index position %s' % (p.player_id, game.players.index(p))
                 emit('player_position', {'position': game.players.index(p)}, room=p.player_id)
@@ -188,10 +188,11 @@ def send_game_state(data):
     :return:
     """
     player_id = session['player_id']
-    game_id = data['game_id']
+    gameroom_id = data['gameroom_id']
     try:
-        game = live_games[game_id]
-        emit('render_state', str(game), room=game_id)
+        game = live_games[gameroom_id]
+        print game
+        emit('render_state', str(game), room=gameroom_id)
         print 'Sent render_state signal to clients'
     except:
         print 'Not a live game.'
@@ -205,11 +206,11 @@ def end_turn(data):
     :return:
     """
     player_id = session['player_id']
-    game_id = data['game_id']
-    if game_id in live_games:
-        game = live_games[game_id]
-        print 'Player %s sent end_turn signal for Game %s' % (player_id, game_id)
+    gameroom_id = data['gameroom_id']
+    if gameroom_id in live_games:
+        game = live_games[gameroom_id]
+        print 'Player %s sent end_turn signal for Game %s' % (player_id, gameroom_id)
         game.next_turn()
-        emit('render_state', str(game), room=game_id)
+        emit('render_state', str(game), room=gameroom_id)
     else:
         print 'Game not found. Invalid end_turn signal.'
