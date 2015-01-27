@@ -6,8 +6,8 @@ import uuid
 
 from app import app, socketio, db
 from models import Gameroom
-from engine import Game, Player
-
+#from engine import Game, Player
+from monsterzoo import MonsterZooGame, Player
 
 # Helper Functions
 
@@ -114,7 +114,7 @@ def connect():
     Assigns a player_id and matching room to each connection. Stores the player_id in a session
     so we can use it later.
     """
-    player_id = uuid.uuid4()
+    player_id = str(uuid.uuid4())
     session['player_id'] = player_id
     # put the player in a room for direct communication
     room = player_id
@@ -154,23 +154,31 @@ def game_connect(data):
         # Check to see if game has been created. If not, create game.
         if game_id in live_games:
             game = live_games[game_id]
-            print 'Game found for game_id %s' % game_id
+            print 'Existing game already found. Game set to %s' % game_id
         else:
-            game = Game(game_id)
+            game = MonsterZooGame()
             live_games[game_id] = game
-            print 'Game %s created for Gameroom %s' % (game, game_id)
+            print 'No Game Found. New Game created for Gameroom %s' % (game_id)
+
         # Try to add player to game room.
-        if game.add_player(player_id):
+        player = Player(player_id)
+        print "Used player_id %s to make Player object. Player.player_id = %s" % (player_id, player.player_id)
+        if game.add_player(player):
             join_room(game_id)
-            emit('alert', 'Player %s has been added to game %s' % (player_id, game_id), room=game_id)
+            emit('alert', 'Player %s has been added to game %s' % (player.player_id, game_id), room=game_id)
         else:
             print 'Player %s can not be added to game. Redirecting to lobby.' % player_id
             emit('redirect', {'url': url_for('lobby')}, room=player_id)
-        if game.ready():
-            print 'Game is ready. Starting.'
-            print live_games
-            game.start()
-            emit('game_start', {'game_id': game.game_id}, room=game_id)
+
+        # Check to see if game is now full
+        if game.is_ready():
+            print 'Game is ready. Setting up game.'
+            print 'Live games: %s' % live_games
+            game.setup_game()
+            emit('game_start', {'game_id': game_id}, room=game_id)
+            for p in game.players:
+                print 'Player %s is at index position %s' % (p.player_id, game.players.index(p))
+                emit('player_position', {'position': game.players.index(p)}, room=p.player_id)
 
 @socketio.on('get_game_state', namespace='/game')
 def send_game_state(data):
@@ -183,8 +191,25 @@ def send_game_state(data):
     game_id = data['game_id']
     try:
         game = live_games[game_id]
-        emit('render_state', game.state.to_JSON(), room=game_id)
+        emit('render_state', str(game), room=game_id)
         print 'Sent render_state signal to clients'
     except:
         print 'Not a live game.'
         #emit('redirect', {'url': url_for('lobby')}, room=player_id)
+
+@socketio.on('end_turn', namespace='/game')
+def end_turn(data):
+    """
+
+    :param data:
+    :return:
+    """
+    player_id = session['player_id']
+    game_id = data['game_id']
+    if game_id in live_games:
+        game = live_games[game_id]
+        print 'Player %s sent end_turn signal for Game %s' % (player_id, game_id)
+        game.next_turn()
+        emit('render_state', str(game), room=game_id)
+    else:
+        print 'Game not found. Invalid end_turn signal.'

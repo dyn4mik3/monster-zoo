@@ -5,19 +5,23 @@ import uuid
 
 class MonsterZooGame(object):
     def __init__(self, max_player_count=2):
-        self.player_list = []
+        self.players = []
         self.max_player_count = max_player_count
         self.wild = Wild()
         self.current_player = None
+        self.starting_positions = None
 
     def add_player(self, player):
-        if len(self.player_list) < self.max_player_count:
-            self.player_list.append(player)
+        if len(self.players) < self.max_player_count:
+            self.players.append(player)
+            print 'Added player. Player list is now %s' % self.players
+            return True
         else:
-            print 'Already max players'
+            print 'Game is already at max player count. Player cannot be added to game.'
+            return False
 
     def is_ready(self):
-        if len(self.player_list) == self.max_player_count:
+        if len(self.players) == self.max_player_count:
             return True
         else:
             return False
@@ -25,13 +29,13 @@ class MonsterZooGame(object):
     def next_player(self):
         if self.current_player:
             # if the current player is the last one in the list, start from beginning
-            if self.current_player == self.player_list[-1]:
-                return self.player_list[0]
+            if self.current_player == self.players[-1]:
+                return self.players[0]
             else:
-                player_index = self.player_list.index(self.current_player)
-                return self.player_list[player_index+1]
+                player_index = self.players.index(self.current_player)
+                return self.players[player_index+1]
         else:
-            return self.player_list[0]
+            return self.players[0]
 
     def next_turn(self):
         """
@@ -46,9 +50,10 @@ class MonsterZooGame(object):
         Setup the active player.
         """
         if self.is_ready():
-            for player in self.player_list:
+            for player in self.players:
                 player.draw(5)
             self.wild.draw(5)
+            self.starting_positions = [p.player_id for p in self.players]
             self.current_player = self.next_player()
         else:
             print 'Not enough players to setup game'
@@ -207,7 +212,8 @@ WILD_DECK_CARDS = [
 ]
 
 STARTER_DECK_CARDS = [
-    (10, OneOogly)
+    (10, OneOogly),
+    (5, TwoOogly)
 ]
 
 
@@ -234,13 +240,15 @@ class Player(object):
         if player_id:
             self.player_id = player_id
         else:
-            self.player_id = uuid.uuid4()
+            # added str() as hack to send the string version of uuid. the json code
+            # below sends some weird string if I don't do this.
+            self.player_id = str(uuid.uuid4())
         self.deck = StarterDeck()
         self.zoo = Zoo()
         self.hand = Hand()
         self.discard = Discard()
         self.score = 0
-        self.food = 0
+        self.food = 10
         self.food_discount = 0
 
     def play_from_hand(self, card):
@@ -269,6 +277,9 @@ class Player(object):
         self.food = 0
         self.deck.clean_up()
 
+    def __str__(self):
+        # print statements will return json representation of variables
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
 class Wild(Player):
     def __init__(self):
