@@ -141,10 +141,10 @@ $(function () {
         'name="' + index_location +
         '" class="btn btn-primary btn-xs play-this">Play This Card</button>' +
         '</div></div>';
-
-        if (player.player_id == player_id) {
+        
+            console.log('Rendering card face up.');
+            console.log(card_layout);
             $('#player1').append(card_layout);
-        }
     }
 
     function render_play_buttons(current_player) {
