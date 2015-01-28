@@ -144,7 +144,7 @@ $(function () {
         'name="' + index_location +
         '" class="btn btn-primary btn-xs play-this">Play This Card</button>' +
         '</div></div>';
-        
+
             console.log('Rendering card face up.');
             $('#player1').append(card_layout);
     }
