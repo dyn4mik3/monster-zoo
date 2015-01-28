@@ -56,6 +56,8 @@ $(function () {
         // Wipe the render clean. Note this could be optimized to only wipe out portions of the board
         // that need updating. Add a callback so this is done before rendering starts.
         $('#wild').empty();
+        $('#player1').empty();
+        $('#player2').empty();
         if (callback && typeof(callback) == "function") {
             callback();
         }
@@ -98,6 +100,7 @@ $(function () {
             // Render face down if player_id match
             for (var c = 0; c < card_count; c++) {
                 console.log('Face down card');
+                render_card_face_down(player.player_id, cards[c], c)
             }
         }
     }
@@ -143,8 +146,51 @@ $(function () {
         '</div></div>';
         
             console.log('Rendering card face up.');
-            console.log(card_layout);
             $('#player1').append(card_layout);
+    }
+
+    function render_card_face_down(player, card, index_location) {
+        var card_family = card.family;
+        var card_name = card.name;
+        var card_cost = card.cost;
+        var card_image = card.image;
+        var card_text = card.description;
+
+        if (card_family == 'Boogly') {
+            var card_class = '<div class="card booglyback" ';
+        }
+        else if (card_family == 'Oogly') {
+            var card_class = '<div class="card ooglyback" ';
+        }
+        else if (card_family == 'Zoogly') {
+            var card_class = '<div class="card zooglyback" ';
+        }
+        else if (card_family == 'Food') {
+            var card_class = '<div class="card foodback" ';
+        }
+        else {
+            var card_class = '<div class="card" ';
+        }
+        var card_back = '<div class="card cardback" style="background-color:#f79a2f;"><div class="corner top_left"><span class="number">' +
+        '</span></div><div class="corner top_right"><span class="number">' +
+        '</span></div><div class="card_image"><p><img src="/static/images/Logo.png" height="80px"></p>' +
+        '</div>' +
+        '</div>';
+
+        var card_layout = card_class + 'id="player1card' + index_location +
+        '"><div class="corner top_right"><span class="number">' + card_cost +
+        '</span></div><div class="corner top_left"><span class="number">' + card_name +
+        '</span></div><div class="card_image"><p><img src="' + card_image +
+        '" height="80px"></p>' + card_text +
+        '</div>' +
+        '<div class="playbutton">' +
+        '<button type="button" ' +
+        'name="' + index_location +
+        '" class="btn btn-primary btn-xs play-this">Play This Card</button>' +
+        '</div></div>';
+
+            console.log('Rendering card face down.');
+            $('#player2').append(card_back);
     }
 
     function render_play_buttons(current_player) {

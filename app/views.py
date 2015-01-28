@@ -146,6 +146,7 @@ def game_connect(data):
     """
     User is on game page at this point. Add them to the socketio room. Add them as a player to the Game.
     """
+    print data
     gameroom_id = data['gameroom_id']  # taken from the game page
     player_id = session['player_id']  # player_id is already stored in the socketio session on connect
 
@@ -179,8 +180,9 @@ def game_connect(data):
             for p in game.players:
                 print 'Player %s is at index position %s' % (p.player_id, game.players.index(p))
                 emit('player_position', {'position': game.players.index(p)}, room=p.player_id)
+            emit('render_state', str(game), room=gameroom_id)
 
-@socketio.on('get_game_state', namespace='/game')
+@socketio.on('get_game_state-----DISABLED------', namespace='/game')
 def send_game_state(data):
     """
     Start game and send render signal with data
