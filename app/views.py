@@ -160,6 +160,7 @@ def game_connect(data):
             game = MonsterZooGame()
             live_games[gameroom_id] = game
             print 'No Game Found. New Game created for Gameroom %s' % (gameroom_id)
+            emit('host', room=player_id)
 
         # Try to add player to game room.
         player = Player(player_id)

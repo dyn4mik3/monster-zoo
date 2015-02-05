@@ -34,9 +34,15 @@ $(function () {
         socket.emit('game_connect', {'player_id': player_id, 'gameroom_id': gameroom_id});
     });
 
+    socket.on('host', function(data) {
+        $('#waiting-modal').modal('show');
+        console.log('Open waiting-modal');
+    });
+
     socket.on('game_start', function (data) {
         console.log('Received game_start signal from server.');
         socket.emit('get_game_state', {'player_id': player_id, 'gameroom_id': gameroom_id});
+        $('#waiting-modal').modal('hide');
     });
 
     socket.on('render_state', function (data) {

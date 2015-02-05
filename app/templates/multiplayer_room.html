@@ -209,5 +209,19 @@
                 </div>
         <script src="/static/js/socketio/socket.io.min.js"></script>
         <script src="/static/js/monsterzoo.js"></script>
-
+    <div class="modal fade" id="waiting-modal" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content text-left">
+                <div class="modal-header">
+                    <button type="button" class="close" data-controls-modal="waiting-modal"
+                        data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 class="modal-title">Waiting on More Players</h3>
+                </div>
+                <div class="modal-body text-center">
+                    <p class="lead">Tell your friends to join this game:</p>
+                    <p>Game ID: {{ game_id }}</p>
+                </div>
+            </div> <!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /modal -->
 {% endblock content %}
